@@ -12,7 +12,7 @@ Window = pygame.display.set_mode((Width,Height))
 Title = pygame.display.set_caption("Shoot!")
 # Variables for code
 Clock = pygame.time.Clock()
-Text = pygame.font.Font(None, 50)
+Text = pygame.font.Font(None, 75)
 Music = pygame.mixer.Sound(r"C:\Users\vihaa\OneDrive\Documents\Ultimate Code\Code\shoot.wav")
 
 # Player Settings
@@ -73,9 +73,11 @@ while run:
         enemy_speed -= 0.1
         if enemy_speed < 3:
             enemy_speed = 3
-        score = 0
+        score -= 1
 
-
+# Score Check
+     if score <= 0:
+       score = 0
 
 # Bullet Logic
     if fire_bullet:
@@ -109,9 +111,10 @@ while run:
         pygame.draw.circle(Window, (255, 255, 255), (bullet[0], bullet[1]), bullet_radius)
 # Blit
     Score_text = Text.render(f"{score}", True, (255, 255, 255))
-    Window.blit(Score_text, (10, 10))
+    Window.blit(Score_text, (375,10))
 # Refresh
     pygame.display.update()
     
     Clock.tick(60)
 pygame.quit()
+
