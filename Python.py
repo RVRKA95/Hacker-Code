@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -9,6 +10,11 @@ Height = 500
 Window = pygame.display.set_mode((Width, Height))
 pygame.display.set_caption("Python.io")
 Clock = pygame.time.Clock()
+font = pygame.font.Font(None,50)
+WHITE = (255,255,255)
+
+tick_rate = 40
+tick_change = tick_rate   # start with base speed
 
 # Snake Class
 class Python:
@@ -101,35 +107,45 @@ while run:
                 Mr_Snake.change_direction("LEFT")
             elif event.key == pygame.K_d:
                 Mr_Snake.change_direction("RIGHT")
+            elif event.key == pygame.K_UP:
+                tick_change += 5   # speed up
+            elif event.key == pygame.K_DOWN:
+                tick_change -= 5   # slow down
+                if tick_change < 5:   # prevent freezing
+                    tick_change = 5
 
     Mr_Snake.move_snake()
     Mr_Snake.check_borders()
 
-    # Snake body management
-    Mr_Snake.snake_list.append([Mr_Snake.x, Mr_Snake.y])
-    if len(Mr_Snake.snake_list) > Mr_Snake.snake_length:
-        del Mr_Snake.snake_list[0]
-
     # Fill screen
     Window.fill(Background)
 
-    # Draw food
-    Guinea_pig.draw_food(Window, Guinea_pig_colour)
+    for x,y in Mr_Snake.snake_list:
+        snake_box = pygame.draw.rect(Window, Mr_Snake.color,(x,y,Mr_Snake.width,Mr_Snake.height))
+        food_box = pygame.draw.circle(Window, Guinea_pig_colour, (Guinea_pig.x, Guinea_pig.y), Guinea_pig.size)
 
-    # Draw snake
-    Mr_Snake.draw_snake(Window)
+        if snake_box.colliderect(pygame.Rect(Guinea_pig.x-Guinea_pig.size,
+                                             Guinea_pig.y-Guinea_pig.size,
+                                             Guinea_pig.size*2, Guinea_pig.size*2)):
+            Guinea_pig = Food(8)
+            Mr_Snake.snake_length += 3
 
-    # Collision check (simple distance check)
-    snake_head = pygame.Rect(Mr_Snake.x, Mr_Snake.y, Mr_Snake.width, Mr_Snake.height)
-    food_rect = pygame.Rect(Guinea_pig.x - Guinea_pig.size, Guinea_pig.y - Guinea_pig.size, Guinea_pig.size * 2, Guinea_pig.size * 2)
+    # Snake body management
+    Mr_Snake.snake_list.append([Mr_Snake.x, Mr_Snake.y])
+    if len(Mr_Snake.snake_list) > Mr_Snake.snake_length:
+        Mr_Snake.snake_list.pop(0)
+    if Mr_Snake.snake_list[-1] in Mr_Snake.snake_list[:-1]:
+        time.sleep(2)
+        Mr_Snake.snake_list.clear()
+        Mr_Snake.snake_length = 1
 
-    if snake_head.colliderect(food_rect):
-        print("Collide!")
-        Mr_Snake.snake_length += 5
-        Guinea_pig = Food(8)  # new food
+    # Score
+    screen_text = font.render(f"{Mr_Snake.snake_length - 1}", True, WHITE)
+    Window.blit(screen_text, (10,10))
 
     # Refresh
     pygame.display.update()
-    Clock.tick(30)
+    Clock.tick(tick_change)   # <- use tick_change here
+    print(f"Current tick: {tick_change}")
 
 pygame.quit()
